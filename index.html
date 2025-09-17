@@ -3,31 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Весёлый калькулятор</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>TCalculator - Весёлый калькулятор</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50, #1a1a1a);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .calculator {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 2px solid #FF9800;
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .display {
+            background: #ecf0f1;
+            color: #2c3e50;
+            font-size: 36px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            text-align: right;
+            margin-bottom: 15px;
+            min-height: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .history {
+            color: #7f8c8d;
+            font-size: 14px;
+            text-align: right;
+            min-height: 20px;
+            margin-bottom: 5px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            background: #FF9800;
+            border: none;
+            border-radius: 10px;
+            padding: 18px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #FF5722;
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .op {
+            background: #3498db;
+            color: #fff;
+        }
+
+        .eq {
+            background: #2ecc71;
+            color: #fff;
+            grid-column: span 2;
+        }
+
+        .clear {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .delete {
+            background: #95a5a6;
+            color: #fff;
+        }
+
+        .decimal {
+            background: #9b59b6;
+            color: #fff;
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 15px;
+                font-size: 20px;
+            }
+            
+            .display {
+                font-size: 28px;
+                padding: 12px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="calculator">
+        <div class="history" id="history"></div>
         <div class="display" id="display">0</div>
         <div class="buttons">
+            <button class="btn clear" onclick="clearAll()">C</button>
+            <button class="btn delete" onclick="deleteLast()">←</button>
+            <button class="btn op" onclick="chooseOperation('^')">^</button>
+            <button class="btn op" onclick="chooseOperation('/')">/</button>
+            
             <button class="btn num" onclick="appendNumber(7)">7</button>
             <button class="btn num" onclick="appendNumber(8)">8</button>
             <button class="btn num" onclick="appendNumber(9)">9</button>
-            <button class="btn op" onclick="chooseOperation('/')">➗</button>
+            <button class="btn op" onclick="chooseOperation('*')">×</button>
+            
             <button class="btn num" onclick="appendNumber(4)">4</button>
             <button class="btn num" onclick="appendNumber(5)">5</button>
             <button class="btn num" onclick="appendNumber(6)">6</button>
-            <button class="btn op" onclick="chooseOperation('*')">✖️</button>
+            <button class="btn op" onclick="chooseOperation('-')">-</button>
+            
             <button class="btn num" onclick="appendNumber(1)">1</button>
             <button class="btn num" onclick="appendNumber(2)">2</button>
             <button class="btn num" onclick="appendNumber(3)">3</button>
-            <button class="btn op" onclick="chooseOperation('-')">➖</button>
+            <button class="btn op" onclick="chooseOperation('+')">+</button>
+            
             <button class="btn num" onclick="appendNumber(0)">0</button>
-            <button class="btn" onclick="clearDisplay()">C</button>
-            <button class="btn op" onclick="chooseOperation('+')">➕</button>
+            <button class="btn decimal" onclick="appendDecimal()">.</button>
+            <button class="btn op" onclick="calculatePercentage()">%</button>
             <button class="btn eq" onclick="compute()">=</button>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        let currentInput = '';
+        let operation = '';
+        let previousInput = '';
+        let calculationHistory = [];
+
+        function appendNumber(number) {
+            if (currentInput.length < 12) {
+                currentInput += number.toString();
+                updateDisplay();
+            }
+        }
+
+        function appendDecimal() {
+            if (!currentInput.includes('.')) {
+                currentInput += currentInput === '' ? '0.' : '.';
+                updateDisplay();
+            }
+        }
+
+        function chooseOperation(op) {
+            if (currentInput === '') return;
+            if (previousInput !== '') {
+                compute();
+            }
+            operation = op;
+            previousInput = currentInput;
+            currentInput = '';
+            updateDisplay();
+        }
+
+        function compute() {
+            let computation;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            
+            if (isNaN(prev) || isNaN(current)) return;
+            
+            switch (operation) {
+                case '+':
+                    computation = prev + current;
+                    break;
+                case '-':
+                    computation = prev - current;
+                    break;
+                case '*':
+                    computation = prev * current;
+                    break;
+                case '/':
+                    computation = prev / current;
+                    break;
+                case '^':
+                    computation = Math.pow(prev, current);
+                    break;
+                case '%':
+                    computation = (prev * current) / 100;
+                    break;
+                default:
+                    return;
+            }
+            
+            // Сохраняем в историю
+            calculationHistory.unshift(`${previousInput} ${operation} ${currentInput} = ${computation}`);
+            if (calculationHistory.length > 3) {
+                calculationHistory.pop();
+            }
+            
+            currentInput = computation.toString();
+            operation = '';
+            previousInput = '';
+            updateDisplay();
+            updateHistory();
+        }
+
+        function calculatePercentage() {
+            if (currentInput === '') return;
+            const current = parseFloat(currentInput);
+            currentInput = (current / 100).toString();
+            updateDisplay();
+        }
+
+        function clearAll() {
+            currentInput = '';
+            previousInput = '';
+            operation = '';
+            updateDisplay();
+        }
+
+        function deleteLast() {
+            currentInput = currentInput.slice(0, -1);
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('display').innerText = currentInput || '0';
+        }
+
+        function updateHistory() {
+            document.getElementById('history').innerHTML = calculationHistory.join('<br>');
+        }
+
+        // Добавляем обработчики клавиатуры
+        document.addEventListener('keydown', function(event) {
+            if (/[0-9]/.test(event.key)) {
+                appendNumber(parseInt(event.key));
+            } else if (event.key === '.') {
+                appendDecimal();
+            } else if (event.key === '+') {
+                chooseOperation('+');
+            } else if (event.key === '-') {
+                chooseOperation('-');
+            } else if (event.key === '*') {
+                chooseOperation('*');
+            } else if (event.key === '/') {
+                chooseOperation('/');
+            } else if (event.key === 'Enter' || event.key === '=') {
+                compute();
+            } else if (event.key === 'Escape') {
+                clearAll();
+            } else if (event.key === 'Backspace') {
+                deleteLast();
+            }
+        });
+    </script>
 </body>
 </html>
