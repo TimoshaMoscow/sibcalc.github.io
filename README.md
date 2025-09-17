@@ -1,3 +1,2 @@
 # FunCalculator
-Для работы, скачайте все файлы, распакуйте, и запустите файл index.html
-
+It's a calculator
